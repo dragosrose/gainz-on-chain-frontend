@@ -12,14 +12,6 @@ function Dapp() {
     const { activeChain } = useNetwork();
 
     const [signSuccess, setSignSuccess] = useState('');
-    const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
-        message: 'Upon signing this message I agree to sell my soul to Dragos.',
-        onSuccess(data, variables){
-            const address = verifyMessage(variables.message, data);
-            // Displaying the signee address (your address) when indeed you are the one signing.
-            setSignSuccess(address);
-        }
-    });
 
     const contract = useContract({
         addressOrName: '0x4b5175442b77687C5370Db40dD50bba8b9746E35',
@@ -68,27 +60,14 @@ function Dapp() {
         return (
             <div className={'flex flex-col space-y-4'}>
                 <div>
-                    <button className={'p-4'} disabled={isLoading} onClick={() => signMessage()}>
-                        Sign message
-                    </button>
-                    {isSuccess && <div> <p>Signee : {signSuccess}</p> <p>Signature : {data}</p> </div>}
-                    {isError && <div>Error signing message</div>}
-                </div>
-                <div>
-                    <button className={'p-4'} onClick={set}>Set Number</button>
-                    <input type={'number'} placeholder={'0'} min={0} className={'p-2 text-center'}
+                    <button className={'p-4'} onClick={set}>Mint</button>
+                    <input type={'number'} placeholder={'0'} min={0} max={5} className={'p-2 text-center'}
                     onChange={(event) => {setNumber(event.target.value)}}/>
-                </div>
-                <div>
-                    Number : {getter}
                 </div>
                 <div>
                     <button className={'p-4'} onClick={depositTokens}>Deposit Ether</button>
                     <input type={'number'} step={'0.001'} placeholder={'0'} min={0} className={'p-2 text-center'}
                     onChange={(event) => {setDeposit(event.target.value)}}/>
-                </div>
-                <div>
-                    <button className={'p-4'} onClick={withdrawTokens}>Withdraw Funds</button>
                 </div>
                 <div>
                     <p className={'text-green-600'}>{status}</p>

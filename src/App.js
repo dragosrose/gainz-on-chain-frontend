@@ -10,9 +10,13 @@ function App() {
     return (
         <div className={'container mx-auto px-20 font-mono m-2'}>
             <Provider client={client}>
-                <header className={'text-center my-4'}>
+                <header className={'my-4'}>
                     <Profile></Profile>
                 </header>
+
+                <div className={'text-center font-bold text-6xl'}>
+                    <p>Gainz on Chain</p>
+                </div>
 
                 <main className={'text-center my-4'}>
                     <Dapp></Dapp>

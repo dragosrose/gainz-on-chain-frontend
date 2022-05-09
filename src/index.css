@@ -4,6 +4,6 @@
 
 @layer components {
     button {
-        @apply font-bold shadow-lg bg-amber-200 m-2 p-1;
+        @apply font-bold shadow-lg bg-red-900 m-2 p-1;
     }
 }
