@@ -3,6 +3,11 @@ import {InjectedConnector} from 'wagmi/connectors/injected'
 import {createAlchemyWeb3} from "@alch/alchemy-web3";
 import {useEffect, useState} from "react";
 
+var Hand = require('pokersolver').Hand;
+
+let handHeld = [];
+let selectedNFT = [];
+
 function Profile() {
     const account = useAccount();
     const [nfts, setNfts] = useState();
@@ -20,6 +25,29 @@ function Profile() {
         })).ownedNfts;
     }
 
+
+
+    const [selected, setSelected] = useState([]);
+
+    const selectNFT = (props, id) => {
+        if (selectedNFT.includes(id)){
+            const index = selectedNFT.indexOf(id);
+            selectedNFT.splice(index, 1);
+
+        } else {
+            selectedNFT.push(id);
+            const value = props[1].value;
+            const suits = props[2].value;
+
+            handHeld.push({key: value, value: suits})
+
+        }
+
+        console.log(selectedNFT);
+        setSelected([...selectedNFT]);
+
+    }
+
     useEffect(() => {
         async function fetchData() {
             setNfts(await retrieveNFTS());
@@ -27,26 +55,39 @@ function Profile() {
         fetchData();
     }, [])
 
+    function Card({nft}) {
+        return (
+            <div>
+                <div className={'w-full overflow-hidden flex justify-center items-center'}>
+                    <img style={{
+                        border: selected.includes(nft.metadata.edition) ? '4px solid green' : '4px solid red',
+
+                    }}
+                         onClick={() => selectNFT(nft.metadata.attributes, nft.metadata.edition)}
+                         src={nft.metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
+                         alt={'nft'}/>
+                </div>
+
+                <ul className={'my-4 text-center'}>
+                    <li>Name: {nft.metadata.name}</li>
+                    <li>Id: {nft.metadata.edition}</li>
+
+                </ul>
+            </div>
+        );
+    }
+
     if (activeConnector) {
         return (
             <div>
                 Connected to {account.data.address}
                 {activeChain && <div>Connected to {activeChain.name}</div>}
-                <div className={'grid grid-cols-4 gap-4'}>
-                    {nfts && nfts.map(nft =>
-                       <button className={'flex justify-center'}>
-                           <div>
-                               <img
-                                   className={'w-2/3'}
-                                   src={nft.metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/')}
-                                   alt={'nft'}/>
-                               <ul>
-                                   <li>Name: {nft.metadata.name}</li>
-                                   <li>Token Id: {nft.metadata.edition}</li>
-                               </ul>
-                           </div>
+                <div className={'grid grid-flow-col auto-cols-auto gap-4 my-4 w-2/3'}>
+                    {nfts && nfts.map((nft, key) =>
 
-                        </button>)
+                        <Card nft={nft} state={selected}></Card>
+
+                        )
                     }
                 </div>
 
@@ -55,5 +96,7 @@ function Profile() {
     }
     return <button onClick={() => connect()}>Connect Wallet</button>
 }
+
+
 
 export default Profile;
