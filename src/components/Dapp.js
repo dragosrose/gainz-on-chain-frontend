@@ -1,74 +1,69 @@
 import React, {useEffect, useState} from 'react';
 import {useContract, useNetwork, useSigner, useSignMessage} from "wagmi";
 import contractABI from "../contracts/contractABI.json"
+import Whitelisted from "./Whitelisted";
 import {formatEther, parseEther, verifyMessage} from "ethers/lib/utils";
 import {ethers} from "ethers";
+import keccak256 from "keccak256";
 
 function Dapp() {
+    const whitelist = new Whitelisted();
+    let tree = whitelist.merkleTree;
+
+    // console.log(tree.getHexRoot());
     const account = useSigner();
+    let address;
+    if(account.data) {
+        address = account.data.getAddress();
+    }
 
     // useProvider() method exceeded request rate, working with only injected provider.
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const { activeChain } = useNetwork();
 
-    const [signSuccess, setSignSuccess] = useState('');
-
     const contract = useContract({
-        addressOrName: '0x4b5175442b77687C5370Db40dD50bba8b9746E35',
+        addressOrName: '0x141482F609578d29F009DAE6A542395Fa1f332e2',
         contractInterface: contractABI.abi,
         signerOrProvider: account.data || provider
     });
 
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState('');
 
-    const [number, setNumber] = useState(0);
-    const [getter, setGetter] = useState(0);
-    const [deposit, setDeposit] = useState(0);
+    const [quantity, setQuantity] = useState(0);
+    const [proof, setProof] = useState([]);
+    const [price, setPrice] = useState(0.02);
 
-    const set = async () => {
-        const param = number;
-        const tx = await contract.set(parseEther(param.toString()));
-        await tx.wait();
-        setGetter(formatEther(param));
-        setStatus("You have successfully set number " + param + " .");
+    const getProof = async() => {
+        setProof(tree.getHexProof(keccak256(await address)));
     }
 
-    const get = async () => {
-        const tx = await contract.get();
-        setGetter(formatEther(tx));
+    const getWhitelistStatus = async () => {
+        return await contract.getOnlyWhitelisted();
     }
 
-    const depositTokens = async () => {
-        const param = deposit;
-        const tx = await contract.deposit({value: parseEther(param.toString())});
-        await tx.wait();
-        setStatus("You have successfully deposited " + param + " ethers.");
-    }
+    // TURBEZ
+    const mint = async() => {
+        if(proof.length === 0){
+            await getProof();
 
-    const withdrawTokens = async () => {
-        const tx = await contract.withdraw();
-        await tx.wait();
-        setStatus("You have successfully withdrawn the contract's funds, boss.");
+        } else {
+            console.log(proof);
+            const tx = await contract.mint(quantity, proof, {value: parseEther(price.toString())});
+            await tx.wait();
+            setStatus("You have succesfully minted.");
+        }
     }
-
-    useEffect(() => {
-        get();
-    });
 
 
     if(account.data && activeChain.id === 4)
         return (
             <div className={'flex flex-col space-y-4'}>
                 <div>
-                    <button className={'p-4'} onClick={set}>Mint</button>
+                    <button className={'p-4'} onClick={mint}>Mint</button>
                     <input type={'number'} placeholder={'0'} min={0} max={5} className={'p-2 text-center'}
-                    onChange={(event) => {setNumber(event.target.value)}}/>
+                    onChange={(event) => {setQuantity(event.target.value)}}/>
                 </div>
-                <div>
-                    <button className={'p-4'} onClick={depositTokens}>Deposit Ether</button>
-                    <input type={'number'} step={'0.001'} placeholder={'0'} min={0} className={'p-2 text-center'}
-                    onChange={(event) => {setDeposit(event.target.value)}}/>
-                </div>
+
                 <div>
                     <p className={'text-green-600'}>{status}</p>
                 </div>
