@@ -14,7 +14,11 @@ function Dapp() {
     const account = useSigner();
     let address;
     if(account.data) {
-        address = account.data.getAddress();
+        // doar am schimbat marginu :(
+        if(account.data.getAddress) {
+            address = account.data.getAddress();
+        }
+
     }
 
     // useProvider() method exceeded request rate, working with only injected provider.
@@ -22,7 +26,7 @@ function Dapp() {
     const { activeChain } = useNetwork();
 
     const contract = useContract({
-        addressOrName: '0x141482F609578d29F009DAE6A542395Fa1f332e2',
+        addressOrName: '0x16ad777ac52B1d9681E99802E1099EFD9A59d7e7',
         contractInterface: contractABI.abi,
         signerOrProvider: account.data || provider
     });
@@ -31,7 +35,7 @@ function Dapp() {
 
     const [quantity, setQuantity] = useState(0);
     const [proof, setProof] = useState([]);
-    const [price, setPrice] = useState(0.02);
+    const [price, setPrice] = useState(0.001);
 
     const getProof = async() => {
         setProof(tree.getHexProof(keccak256(await address)));
@@ -48,7 +52,8 @@ function Dapp() {
 
         } else {
             console.log(proof);
-            const tx = await contract.mint(quantity, proof, {value: parseEther(price.toString())});
+            const aux = price * quantity;
+            const tx = await contract.mint(quantity, proof, {value: parseEther(aux.toString())});
             await tx.wait();
             setStatus("You have succesfully minted.");
         }
@@ -60,7 +65,7 @@ function Dapp() {
             <div className={'flex flex-col space-y-4'}>
                 <div>
                     <button className={'p-4'} onClick={mint}>Mint</button>
-                    <input type={'number'} placeholder={'0'} min={0} max={5} className={'p-2 text-center'}
+                    <input type={'number'} placeholder={'0'} min={0} max={20} className={'p-2 text-center'}
                     onChange={(event) => {setQuantity(event.target.value)}}/>
                 </div>
 

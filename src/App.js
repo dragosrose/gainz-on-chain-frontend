@@ -1,31 +1,20 @@
-import { Provider, createClient } from 'wagmi'
-import Profile from "./components/Profile";
-import Dapp from "./components/Dapp";
-
-const client = createClient({
-    autoConnect: true,
-})
-
+import UserApp from "./components/UserApp";
+import Navbar from "./components/Navbar";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
+import Info from "./components/Info";
+import Whitepaper from "./components/Whitepaper";
 function App() {
     return (
-        <div className={'container mx-auto px-20 font-mono m-2'}>
-            <Provider client={client}>
-                <div className={'text-center font-bold text-6xl'}>
-                    <p>Gainz on Chain</p>
-                </div>
+        <BrowserRouter>
+            <Navbar></Navbar>
+            <Routes>
+                <Route path={'/'} exact element={<UserApp/>}></Route>
+                <Route path={'/about'} element={<Info/>}></Route>
+                <Route path={'/whitepaper'} element={Whitepaper}></Route>
+            </Routes>
+        </BrowserRouter>
 
-                <header className={'my-4'}>
-                    <Profile></Profile>
-                </header>
-
-
-                <main className={'text-center my-4'}>
-                    <Dapp></Dapp>
-                </main>
-            </Provider>
-        </div>
-
-    )
+    );
 }
 
 export default App;
